@@ -120,11 +120,6 @@ func applyArguments() {
 	}
 }
 
-func InitAllExchangesV2(apiCaller *callapi.APICaller) {
-	capi = apiCaller
-	initAllExchangesV2()
-}
-
 // Start start syncer
 func Start(apiCaller *callapi.APICaller, onlySyncAcc bool) {
 	capi = apiCaller

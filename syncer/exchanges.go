@@ -19,10 +19,13 @@ func addExchanges(rlog *types.Log) {
 }
 
 func InitAllExchanges() {
-	if params.AnyswapV2 {
-		initAllExchangesV2()
-	} else {
-		initAllExchanges()
+	log.Info("InitAllExchanges", "params.CheckExchanges", params.CheckExchanges)
+	if params.GetExchanges {
+		if params.AnyswapV2 {
+			initAllExchangesV2()
+		} else {
+			initAllExchanges()
+		}
 	}
 }
 

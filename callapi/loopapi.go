@@ -27,7 +27,7 @@ var (
 	method_ExchangeFactory   string
 )
 
-func init() {
+func Init() {
 	count := 0
 	if params.AnyswapV2 {
 		count = 1

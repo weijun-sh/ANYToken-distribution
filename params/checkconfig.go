@@ -26,7 +26,7 @@ func CheckConfig() (err error) {
 	case config.Exchanges == nil:
 		return errors.New("must config Exchanges")
 	}
-	err = checkExchangeConfig()
+	err = CheckExchangeConfig()
 	if err != nil {
 		return err
 	}
@@ -47,6 +47,17 @@ func CheckConfig() (err error) {
 	err = checkStakeConfig()
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func CheckExchangeConfig() error {
+	if CheckExchanges {
+		if AnyswapV2 {
+			return checkExchangeConfigV2()
+		} else {
+			return checkExchangeConfig()
+		}
 	}
 	return nil
 }
@@ -81,6 +92,60 @@ func checkExchangeConfig() error {
 		if !(sumTradeWeight == 100 || sumTradeWeight == 0) {
 			return fmt.Errorf("sum of trade percentage weight is %v, not equal to 100 or 0", sumTradeWeight)
 		}
+	}
+	return nil
+}
+
+func checkExchangeConfigV2() error {
+	pairsMap := make(map[string]struct{})
+	exchangeMap := make(map[string]struct{})
+	tokenMap := make(map[string]struct{})
+	sumTradeWeight := uint64(0)
+	for _, ex := range config.Exchanges {
+		if err := ex.checkV2(); err != nil {
+			return err
+		}
+		pairs := strings.ToLower(ex.Pairs)
+		exchange := strings.ToLower(ex.Exchange)
+		token := strings.ToLower(ex.Token0)
+		token += strings.ToLower(ex.Token1)
+		if _, exist := pairsMap[pairs]; exist {
+			return fmt.Errorf("duplicate pairs %v", ex.Pairs)
+		}
+		if _, exist := exchangeMap[exchange]; exist {
+			return fmt.Errorf("duplicate exchange %v", ex.Exchange)
+		}
+		if _, exist := tokenMap[token]; exist {
+			return fmt.Errorf("duplicate token (%v, %v)", ex.Token0, ex.Token1)
+		}
+		pairsMap[pairs] = struct{}{}
+		exchangeMap[exchange] = struct{}{}
+		tokenMap[token] = struct{}{}
+		sumTradeWeight += ex.TradeWeight
+	}
+	if config.Distribute.TradeWeightIsPercentage {
+		if !(sumTradeWeight == 100 || sumTradeWeight == 0) {
+			return fmt.Errorf("sum of trade percentage weight is %v, not equal to 100 or 0", sumTradeWeight)
+		}
+	}
+	return nil
+}
+
+func (ex *ExchangeConfig) checkV2() error {
+	if !common.IsHexAddress(ex.Exchange) {
+		return fmt.Errorf("[check exchange] wrong exchange address '%v'", ex.Exchange)
+	}
+	if ex.Pairs == "" {
+		return fmt.Errorf("[check exchange] empty exchange pairs (exchange %v)", ex.Exchange)
+	}
+	if !common.IsHexAddress(ex.Token0) {
+		return fmt.Errorf("[check exchange] wrong exchange token '%v' (exchange %v)", ex.Token0, ex.Exchange)
+	}
+	if !common.IsHexAddress(ex.Token1) {
+		return fmt.Errorf("[check exchange] wrong exchange token '%v' (exchange %v)", ex.Token1, ex.Exchange)
+	}
+	if ex.CreationHeight == 0 {
+		return fmt.Errorf("[check exchange] wrong exchange creation height '%v' (exchange %v)", ex.CreationHeight, ex.Exchange)
 	}
 	return nil
 }

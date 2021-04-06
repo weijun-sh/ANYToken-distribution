@@ -34,6 +34,9 @@ func initApp() {
 	}
 	app.Flags = []cli.Flag{
 		utils.ConfigFileFlag,
+		utils.AnyswapV2Flag,
+		utils.GetExchangesFlag,
+		utils.CheckExchangesFlag,
 		utils.SyncFromFlag,
 		utils.SyncToFlag,
 		utils.OverwriteFlag,

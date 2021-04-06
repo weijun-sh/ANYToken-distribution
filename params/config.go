@@ -147,13 +147,27 @@ func IsConfigedExchange(exchange string) bool {
 
 // IsConfigedToken return true if token is configed
 func IsConfigedToken(token string) bool {
-	return GetConfigedExchange(token) != ""
+	if AnyswapV2 {
+		return GetConfigedExchangeV2(token) != ""
+	} else {
+		return GetConfigedExchange(token) != ""
+	}
 }
 
 // GetConfigedExchange get configed exchange
 func GetConfigedExchange(token string) string {
 	for _, ex := range config.Exchanges {
 		if strings.EqualFold(ex.Token, token) {
+			return ex.Exchange
+		}
+	}
+	return ""
+}
+
+// GetConfigedExchangeV2 get configed exchange
+func GetConfigedExchangeV2(token string) string {
+	for _, ex := range config.Exchanges {
+		if strings.EqualFold(ex.Token0, token) || strings.EqualFold(ex.Token1, token) {
 			return ex.Exchange
 		}
 	}
@@ -376,3 +390,4 @@ func InitConfigV2(anyswapV2, getExchanges, checkExchanges bool) {
 	GetExchanges = getExchanges
 	CheckExchanges = checkExchanges
 }
+

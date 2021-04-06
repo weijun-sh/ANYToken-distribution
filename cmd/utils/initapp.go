@@ -23,6 +23,7 @@ func InitAppWithURL(ctx *cli.Context, serverURL string, withConfigFile bool) *ca
 }
 
 func initApp(ctx *cli.Context, withConfigFile bool, serverURL string) *callapi.APICaller {
+	callapi.Init()
 	SetLogger(ctx)
 
 	if !withConfigFile {
