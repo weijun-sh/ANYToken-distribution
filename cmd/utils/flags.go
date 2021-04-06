@@ -253,6 +253,24 @@ var (
 		Name:  "scaling",
 		Usage: "scaling value, comma separated interger of numerator and denominator. eg. 80,100 is scaling 80%",
 	}
+	// AnyswapV2Flag --anyswapv2
+	AnyswapV2Flag = &cli.BoolFlag{
+		Name:    "anyswapv2",
+		Aliases: []string{"v2"},
+		Usage:   "anyswapv2",
+	}
+	// GetExchangesFlag --getexchanges
+	GetExchangesFlag = &cli.BoolFlag{
+		Name:    "getexchanges",
+		Aliases: []string{"ge"},
+		Usage:   "getexchanges",
+	}
+	// CheckExchangesFlag --checkexchanges
+	CheckExchangesFlag = &cli.BoolFlag{
+		Name:    "checkexchanges",
+		Aliases: []string{"ce"},
+		Usage:   "checkexchanges",
+	}
 )
 
 // SyncArguments command line arguments

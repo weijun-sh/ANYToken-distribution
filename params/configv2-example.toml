@@ -1,0 +1,87 @@
+Factories = ["0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac"]
+Routers = ["0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf","0x7a250d5630b4cf539739df2c5dacb4c659f2488d", "0x9c578b573ede001b95d51a55a3fafb45f5608b1f", "0x11111112542d85b3ef69ae05771c2dccff4faa26", "0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f"]
+
+# modgodb database connection config
+[MongoDB]
+DBURL = "localhost:27017"
+DBName = "testnet"
+UserName = "admin"
+Password = "123456"
+
+[Gateway]
+APIAddress = "https://nodes.mewapi.io/rpc/eth"
+AverageBlockTime = 13 # seconds
+
+[Sync]
+JobCount = 4 # job count
+WaitInterval = 6 # wait seconds to get latest block
+Stable = 0 # suggest > 30 for mainnet
+UpdateLiquidity = false # switch to update liquidity per day
+UpdateVolume = false # switch to update volume per day
+RecordTokenAccount = true
+ScanAllExchange = true
+
+[Distribute]
+Enable = false
+ArchiveMode = false
+
+RewardToken = "0xC20b5E92E1ce63Af6FE537491f75C19016ea5fb4"
+ByLiquidRewards = "16500000000000000000000"
+ByVolumeRewards = "250000000000000000000"
+
+# use block height measurement
+StartHeight = 2510000
+StableHeight = 30
+ByLiquidCycle = 6600
+ByVolumeCycle = 100
+
+# use time measurement instead of block height
+UseTimeMeasurement = true
+StartTimestamp = 1605088800   # unix timestamp
+StableDuration = 300          # unit of seconds
+ByLiquidCycleDuration = 86400 # unit of seconds
+ByVolumeCycleDuration = 1800  # unit of seconds
+
+QuickSettleVolumeRewards = false
+DustRewardThreshold = "100000000000000"
+TradeWeightIsPercentage = false
+
+[Stake]
+Contract = "0x2e1f1c7620eecc7b7c571dff36e43ac7ed276779"
+# whole unit of stake token
+Points = [5000, 10000, 15000]
+Percents = [10, 20, 30]
+Stakers = [
+	"0x1111111cd20ac7a2f6c867680f7e21de70aca9c3",
+	"0x2222222cd20ac7a2f6c867680f7e21de70aca9c3",
+	"0x3333333cd20ac7a2f6c867680f7e21de70aca9c3"
+]
+
+[[Exchanges]]
+Pairs = "SUSHI/USDT"
+Exchange = "0x680A025Da7b1be2c204D7745e809919bCE074026"
+Token0 = "0x6B3595068778DD592e39A122f4f5a5cF09C90fE2"
+Token1 = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+CreationHeight = 1
+LiquidWeight = 0
+TradeWeight = 0
+
+[[Exchanges]]
+Pairs = "WETH/USDT"
+Exchange = "0x06da0fd433C1A5d7a4faa01111c044910A184553"
+Token0 = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+Token1 = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+CreationHeight = 1
+LiquidWeight = 0
+TradeWeight = 0
+
+[[Exchanges]]
+Pairs = "gSushi/SUSHI"
+Exchange = "0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f"
+Token0 = "0x6b175474e89094c44da98b954eedeac495271d0f"
+Token1 = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+CreationHeight = 1
+LiquidWeight = 0
+TradeWeight = 0
+
+

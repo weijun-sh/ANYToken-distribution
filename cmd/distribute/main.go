@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/anyswap/ANYToken-distribution/cmd/utils"
+	"github.com/anyswap/ANYToken-distribution/params"
 	"github.com/anyswap/ANYToken-distribution/worker"
 	"github.com/urfave/cli/v2"
 )
@@ -58,6 +59,10 @@ func distribute(ctx *cli.Context) error {
 	if ctx.NArg() > 0 {
 		return fmt.Errorf("invalid command: %q", ctx.Args().Get(0))
 	}
+
+	params.InitConfigV2(ctx.Bool(utils.AnyswapV2Flag.Name),
+		ctx.Bool(utils.GetExchangesFlag.Name),
+		ctx.Bool(utils.CheckExchangesFlag.Name))
 
 	capi := utils.InitApp(ctx, true)
 	defer capi.CloseClient()

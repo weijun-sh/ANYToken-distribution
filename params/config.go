@@ -26,6 +26,12 @@ var (
 	AllTokens    = make(map[common.Address]struct{})
 )
 
+var (
+	AnyswapV2      bool
+	GetExchanges   bool
+	CheckExchanges bool
+)
+
 // Config config
 type Config struct {
 	MongoDB    *MongoDBConfig
@@ -87,6 +93,8 @@ type ExchangeConfig struct {
 	Pairs          string
 	Exchange       string
 	Token          string
+	Token0         string
+	Token1         string
 	CreationHeight uint64
 	LiquidWeight   uint64
 	TradeWeight    uint64
@@ -282,6 +290,27 @@ func AddTokenAndExchange(token, exchange common.Address) {
 	AllExchanges[exchange] = struct{}{}
 }
 
+// AddTokenAndExchangeV2 add token and exchange
+func AddTokenAndExchangeV2(token0, token1, exchange common.Address, pair string) {
+	if token0 == (common.Address{}) || token1 == (common.Address{}) || exchange == (common.Address{}) || config == nil {
+		log.Warn("AddTokenAndExchangeV2", "token0", token0, "token1", token1, "exchange", exchange, "pair", pair, "config", config, "err", "item is nil")
+		return
+	}
+	if IsInAllExchanges(exchange) {
+		log.Warn("AddTokenAndExchangeV2", "exchange", exchange, "err", "exchange is exist")
+		return
+	}
+	AllTokens[token0] = struct{}{}
+	AllTokens[token1] = struct{}{}
+	AllExchanges[exchange] = struct{}{}
+	tmpExchangeConfig := &ExchangeConfig{}
+	tmpExchangeConfig.Exchange = exchange.String()
+	tmpExchangeConfig.Token0 = token0.String()
+	tmpExchangeConfig.Token1 = token1.String()
+	tmpExchangeConfig.Pairs = pair
+	config.Exchanges = append(config.Exchanges, tmpExchangeConfig)
+}
+
 // IsInAllTokens is exchange token
 func IsInAllTokens(token common.Address) bool {
 	_, exist := AllTokens[token]
@@ -340,4 +369,10 @@ func (s *StakeConfig) initStakersMap() {
 	for _, staker := range s.Stakers {
 		s.stakersMap[common.HexToAddress(staker)] = struct{}{}
 	}
+}
+
+func InitConfigV2(anyswapV2, getExchanges, checkExchanges bool) {
+	AnyswapV2 = anyswapV2
+	GetExchanges = getExchanges
+	CheckExchanges = checkExchanges
 }

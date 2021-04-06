@@ -42,7 +42,7 @@ func initApp(ctx *cli.Context, withConfigFile bool, serverURL string) *callapi.A
 
 	capi := DialServer(serverURL)
 
-	if err := verifyConfig(capi); err != nil {
+	if err := VerifyConfig(capi); err != nil {
 		log.Fatalf("verifyConfig error. %v", err)
 	}
 
@@ -69,6 +69,17 @@ func InitMongodb() {
 	mongodb.MongoServerInit([]string{dbConfig.DBURL}, dbConfig.DBName, dbConfig.UserName, dbConfig.Password)
 }
 
+func VerifyConfig(capi *callapi.APICaller) error {
+	if !params.CheckExchanges {
+		return nil
+	}
+	if params.AnyswapV2 {
+		return verifyConfigV2(capi)
+	} else {
+		return verifyConfig(capi)
+	}
+}
+
 func verifyConfig(capi *callapi.APICaller) error {
 	config := params.GetConfig()
 	for _, ex := range config.Exchanges {
@@ -83,6 +94,26 @@ func verifyConfig(capi *callapi.APICaller) error {
 			return fmt.Errorf("exchange %v 's factory %v is not configed", ex.Exchange, factory.String())
 		}
 		log.Info("verify exchange token success", "exchange", ex.Exchange, "token", ex.Token, "factory", factory.String())
+	}
+	return nil
+}
+
+func verifyConfigV2(capi *callapi.APICaller) error {
+	config := params.GetConfig()
+	for _, ex := range config.Exchanges {
+		exchange := common.HexToAddress(ex.Exchange)
+		token0 := common.HexToAddress(ex.Token0)
+		token1 := common.HexToAddress(ex.Token1)
+		wantToken0 := capi.GetExchangeV2Token0Address(exchange)
+		wantToken1 := capi.GetExchangeV2Token1Address(exchange)
+		if token0 != wantToken0 && token1 != wantToken1 {
+			return fmt.Errorf("exchange token mismatch. exchange %v want token0 %v, but have %v, want token0 %v, but have %v", ex.Exchange, wantToken0.String(), ex.Token0, wantToken1.String(), ex.Token1)
+		}
+		factory := capi.GetExchangeV2FactoryAddress(exchange)
+		if !params.IsConfigedFactory(factory) {
+			return fmt.Errorf("exchange %v 's factory %v is not configed", ex.Exchange, factory.String())
+		}
+		log.Info("verify exchange token success", "exchange", ex.Exchange, "token0", ex.Token0, "token1", ex.Token1, "factory", factory.String())
 	}
 	return nil
 }

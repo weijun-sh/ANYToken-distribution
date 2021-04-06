@@ -132,9 +132,38 @@ func (c *APICaller) GetExchangeTokenAddress(exchange common.Address) common.Addr
 	return common.BytesToAddress(common.GetData(res, 0, 32))
 }
 
+// GetExchangeV2TokenAddress get exchange's token address
+func (c *APICaller) GetExchangeV2Token0Address(exchange common.Address) common.Address {
+	tokenAddressFuncHash := common.FromHex(method_ExchangeToken0)
+	res, err := c.CallContract(exchange, tokenAddressFuncHash, nil)
+	if err != nil {
+		return common.Address{}
+	}
+	return common.BytesToAddress(common.GetData(res, 0, 32))
+}
+
+func (c *APICaller) GetExchangeV2Token1Address(exchange common.Address) common.Address {
+	tokenAddressFuncHash := common.FromHex(method_ExchangeToken1)
+	res, err := c.CallContract(exchange, tokenAddressFuncHash, nil)
+	if err != nil {
+		return common.Address{}
+	}
+	return common.BytesToAddress(common.GetData(res, 0, 32))
+}
+
 // GetExchangeFactoryAddress get exchange's factory address
 func (c *APICaller) GetExchangeFactoryAddress(exchange common.Address) common.Address {
 	factoryAddress := common.FromHex("0x966dae0e")
+	res, err := c.CallContract(exchange, factoryAddress, nil)
+	if err != nil {
+		return common.Address{}
+	}
+	return common.BytesToAddress(common.GetData(res, 0, 32))
+}
+
+// GetExchangeV2FactoryAddress get exchange's factory address
+func (c *APICaller) GetExchangeV2FactoryAddress(exchange common.Address) common.Address {
+	factoryAddress := common.FromHex(method_ExchangeFactory)
 	res, err := c.CallContract(exchange, factoryAddress, nil)
 	if err != nil {
 		return common.Address{}

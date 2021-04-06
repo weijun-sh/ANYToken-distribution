@@ -5,10 +5,39 @@ import (
 	"time"
 
 	"github.com/anyswap/ANYToken-distribution/log"
+	"github.com/anyswap/ANYToken-distribution/params"
 	ethereum "github.com/fsn-dev/fsn-go-sdk/efsn"
 	"github.com/fsn-dev/fsn-go-sdk/efsn/common"
 	"github.com/fsn-dev/fsn-go-sdk/efsn/core/types"
 )
+
+var (
+	methodFactoryTokenCount []string = []string{"0x9f181b5e", "0x574f2ba3"}
+	methodFactoryExchange   []string = []string{"0x06f2bf62", "0x1e3dd18b"}
+	methodExchangeFactory   []string = []string{"0x966dae0e", "0xc45a0155"}
+	methodExchangeToken0    string   = "0x0dfe1681"
+	methodExchangeToken1    string   = "0xd21220a7"
+)
+
+var (
+	method_FactoryTokenCount string
+	method_FactoryExchange   string
+	method_ExchangeToken0    string
+	method_ExchangeToken1    string
+	method_ExchangeFactory   string
+)
+
+func init() {
+	count := 0
+	if params.AnyswapV2 {
+		count = 1
+	}
+	method_FactoryTokenCount = methodFactoryTokenCount[count]
+	method_FactoryExchange = methodFactoryExchange[count]
+	method_ExchangeFactory = methodExchangeFactory[count]
+	method_ExchangeToken0 = methodExchangeToken0
+	method_ExchangeToken1 = methodExchangeToken0
+}
 
 // LoopGetBlockHeader loop get block header
 func (c *APICaller) LoopGetBlockHeader(blockNumber *big.Int) *types.Header {
@@ -114,7 +143,7 @@ func (c *APICaller) loopGetFactoryExcahngeOrToken(factory, address common.Addres
 		res []byte
 		err error
 
-		getExchangeFuncHash = common.FromHex("0x06f2bf62")
+		getExchangeFuncHash = common.FromHex(method_FactoryExchange)
 		getTokenFuncHash    = common.FromHex("0x59770438")
 	)
 	data := make([]byte, 36)
@@ -139,13 +168,43 @@ func (c *APICaller) loopGetFactoryExcahngeOrToken(factory, address common.Addres
 	return common.BytesToAddress(common.GetData(res, 0, 32))
 }
 
+// LoopGetFactoryExchangeV2 get factory exchange
+func (c *APICaller) LoopGetFactoryExchangeV2(factory common.Address, pairsIndex uint64) common.Address {
+	return c.loopGetFactoryExchangeV2(factory, pairsIndex)
+}
+
+func (c *APICaller) loopGetFactoryExchangeV2(factory common.Address, pairsIndex uint64) common.Address {
+	var (
+		res []byte
+		err error
+
+		getExchangeFuncHash = common.FromHex(method_FactoryExchange)
+	)
+	data := make([]byte, 36)
+	copy(data[:4], getExchangeFuncHash)
+	copy(data[4:], common.BigToHash(new(big.Int).SetUint64(pairsIndex)).Bytes())
+	msg := ethereum.CallMsg{
+		To:   &factory,
+		Data: data,
+	}
+	for {
+		res, err = c.client.CallContract(c.context, msg, nil)
+		if err == nil {
+			break
+		}
+		log.Error("[callapi] GetFactoryExcahngeV2 error", "factory", factory.String(), "pairsIndex", pairsIndex, "err", err)
+		time.Sleep(c.rpcRetryInterval)
+	}
+	return common.BytesToAddress(common.GetData(res, 0, 32))
+}
+
 // LoopGetFactoryTokenCount get token count of factory
 func (c *APICaller) LoopGetFactoryTokenCount(factory common.Address) uint64 {
 	var (
 		res []byte
 		err error
 
-		getTokenCountFuncHash = common.FromHex("0x9f181b5e")
+		getTokenCountFuncHash = common.FromHex(method_FactoryTokenCount)
 	)
 	msg := ethereum.CallMsg{
 		To:   &factory,
