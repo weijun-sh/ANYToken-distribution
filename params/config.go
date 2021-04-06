@@ -230,7 +230,7 @@ func GetRouters() []common.Address {
 // IsConfigedRouter return true if router is configed
 func IsConfigedRouter(router string) bool {
 	for _, item := range GetRouters() {
-		if strings.EqualFold(item.String(), router) {
+		if strings.EqualFold(strings.ToLower(item.String()), router) {
 			return true
 		}
 	}
