@@ -95,6 +95,7 @@ type ExchangeV2Receipt struct {
 	LogType    string `bson:"txnsType"`
 	LogIndex   int    `bson:"logIndex"`
 	Exchange   string `bson:"exchange"`
+	Pairs      string `bson:"pairs"`
 	Sender     string `bson:"sender"`
 	To         string `bson:"to"`
 	Amount0In  string `bson:"amount0In"`

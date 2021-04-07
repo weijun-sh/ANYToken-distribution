@@ -24,6 +24,7 @@ var (
 	topicMint = common.HexToHash("0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f")
 	topicBurn = common.HexToHash("0xdccd412f0b1252819cb1fd330b93224ca42612892bb3f4f789976e6d81936496")
 	topicSwap = common.HexToHash("0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822")
+	topicCreateExchangeV2 = common.HexToHash("0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9")
 )
 
 const secondsPerDay = 24 * 3600
@@ -71,6 +72,8 @@ func parseReceipt(mt *mongodb.MgoTransaction, receipt *types.Receipt) (savedb bo
 			save = addExchangeV2Receipt(mt, rlog, idx, "Burn")
 		case topicSwap:
 			save = addExchangeV2Receipt(mt, rlog, idx, "Swap")
+		case topicCreateExchangeV2:
+                       addExchangesV2(rlog)
 		}
 		if save {
 			savedb = true
@@ -108,7 +111,10 @@ func addExchangeReceipt(mt *mongodb.MgoTransaction, rlog *types.Log, logIdx int,
 	case topicRemoveLiquidity:
 		log.Info("[parse] remove liquidity", "exchange", exReceipt.Exchange, "pairs", exReceipt.Pairs, "address", exReceipt.Address, "fromAmount", exReceipt.TokenFromAmount, "toAmount", exReceipt.TokenToAmount)
 	case topicTokenPurchase:
-		recordTokenAccounts(params.GetExchangeToken(exchange), exReceipt.Address)
+		token0 := capi.GetExchangeV2Token0Address(common.HexToAddress(exchange))
+		token1 := capi.GetExchangeV2Token1Address(common.HexToAddress(exchange))
+               recordTokenAccounts(token0.String(), exReceipt.Address)
+               recordTokenAccounts(token1.String(), exReceipt.Address)
 	}
 
 	mt.ExchangeReceipts = append(mt.ExchangeReceipts, exReceipt)
@@ -264,10 +270,12 @@ func addExchangeV2Receipt(mt *mongodb.MgoTransaction, rlog *types.Log, logIdx in
 		LogType:  logType,
 		LogIndex: logIdx,
 		Exchange: exchange,
+		Pairs:    params.GetExchangePairs(exchange),
 	}
 
 	exReceipt.Sender = strings.ToLower(common.BytesToAddress(topics[1].Bytes()).String())
 	if !params.IsConfigedRouter(exReceipt.Sender) {
+		log.Error("addExchangeV2Receipt", "not exist router", exReceipt.Sender)
 		return false
 	}
 	if len(topics) == 3 {
@@ -297,7 +305,7 @@ func addExchangeV2Receipt(mt *mongodb.MgoTransaction, rlog *types.Log, logIdx in
 		exReceipt.Amount1In = new(big.Int).SetBytes(data[32:64]).String()
 		exReceipt.Amount0Out = new(big.Int).SetBytes(data[64:96]).String()
 		exReceipt.Amount1Out = new(big.Int).SetBytes(data[96:128]).String()
-		log.Info("[parse] swap", "exchange", exReceipt.Exchange, "amount0In", exReceipt.Amount0In, "amount1In", exReceipt.Amount1In, "amount0Out", exReceipt.Amount0Out, "amount1Out", exReceipt.Amount1Out)
+		log.Info("[parse] swap", "exchange", exReceipt.Exchange, "amount0In", exReceipt.Amount0In, "amount1In", exReceipt.Amount1In, "amount0Out", exReceipt.Amount0Out, "amount1Out", exReceipt.Amount1Out, "pairs", exReceipt.Pairs)
 	default:
 		return false
 	}
