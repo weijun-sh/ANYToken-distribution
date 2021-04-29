@@ -36,7 +36,7 @@ func Init() {
 	method_FactoryExchange = methodFactoryExchange[count]
 	method_ExchangeFactory = methodExchangeFactory[count]
 	method_ExchangeToken0 = methodExchangeToken0
-	method_ExchangeToken1 = methodExchangeToken0
+	method_ExchangeToken1 = methodExchangeToken1
 }
 
 // LoopGetBlockHeader loop get block header
