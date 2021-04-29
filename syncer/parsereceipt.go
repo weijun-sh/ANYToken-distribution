@@ -274,10 +274,10 @@ func addExchangeV2Receipt(mt *mongodb.MgoTransaction, rlog *types.Log, logIdx in
 	}
 
 	exReceipt.Sender = strings.ToLower(common.BytesToAddress(topics[1].Bytes()).String())
-	if !params.IsConfigedRouter(exReceipt.Sender) {
-		log.Error("addExchangeV2Receipt", "not exist router", exReceipt.Sender)
-		return false
-	}
+	//if !params.IsConfigedRouter(exReceipt.Sender) {
+	//	log.Error("addExchangeV2Receipt", "not exist router", exReceipt.Sender)
+	//	return false
+	//}
 	if len(topics) == 3 {
 		exReceipt.To = strings.ToLower(common.BytesToAddress(topics[2].Bytes()).String())
 	}
