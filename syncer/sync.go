@@ -33,6 +33,9 @@ var (
 	blockInterval   uint64 = 100 // show sync range log
 	messageChanSize        = 100
 
+	retryGetBlockInterval uint64 = 5
+	retryGetTxInterval    uint64 = 5
+
 	retryDuration = time.Duration(1) * time.Second
 	waitDuration  = time.Duration(waitInterval) * time.Second
 
@@ -402,21 +405,23 @@ func (w *worker) syncRange(start, end uint64) {
 			log.Info("[syncer] syncRange", "id", w.id, "from", from, "to", to, "exist", len(mblocks))
 		}
 		for height <= to {
-			mb := getSynced(mblocks, height)
-			if overwrite || mb == nil {
-				block, err := client.BlockByNumber(cliContext, new(big.Int).SetUint64(height))
-				if err != nil {
-					log.Warn("[syncer] get block failed", "id", w.id, "number", height, "err", err)
-					time.Sleep(retryDuration)
-					continue
-				}
-				txs := block.Transactions()
-				receipts := getReceipts(txs)
-				w.Parse(block, receipts)
-				if w.end == 0 {
-					log.Info("[syncer] sync block completed", "id", w.id, "number", height)
-				} else if height%blockInterval == 0 {
-					log.Info("[syncer] syncRange in process", "id", w.id, "number", height, "percentage", w.calcSyncPercentage(height))
+			for i := uint64(0); i < retryGetBlockInterval; i++ {
+				mb := getSynced(mblocks, height)
+				if overwrite || mb == nil {
+					block, err := client.BlockByNumber(cliContext, new(big.Int).SetUint64(height))
+					if err != nil {
+						log.Warn("[syncer] get block failed", "id", w.id, "number", height, "err", err)
+						time.Sleep(retryDuration)
+						continue
+					}
+					txs := block.Transactions()
+					receipts := getReceipts(txs)
+					w.Parse(block, receipts)
+					if w.end == 0 {
+						log.Info("[syncer] sync block completed", "id", w.id, "number", height)
+					} else if height%blockInterval == 0 {
+						log.Info("[syncer] syncRange in process", "id", w.id, "number", height, "percentage", w.calcSyncPercentage(height))
+					}
 				}
 			}
 			height++
@@ -428,7 +433,7 @@ func (w *worker) syncRange(start, end uint64) {
 }
 
 func loopGetReceipt(txHash common.Hash) *types.Receipt {
-	for {
+	for i := uint64(0); i < retryGetTxInterval; i++ {
 		receipt, err := client.TransactionReceipt(cliContext, txHash)
 		if err == nil {
 			return receipt
